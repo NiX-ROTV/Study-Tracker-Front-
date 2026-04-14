@@ -1,0 +1,156 @@
+/* =========================================
+   1. VARIABILE DE CULOARE CSS
+   ========================================= */
+:root {
+  --bg-principal: #e2e8f0; 
+  --bg-card: #ffffff;
+  --text-principal: #1e293b; 
+  --text-secundar: #64748b;
+  --culoare-accent: #3b82f6; 
+  --culoare-hover: #2563eb;
+  --border: #cbd5e1;
+  --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+body.dark {
+  --bg-principal: #0f172a;
+  --bg-card: #1e293b;
+  --text-principal: #f8fafc;
+  --text-secundar: #94a3b8;
+  --culoare-accent: #60a5fa;
+  --culoare-hover: #3b82f6;
+  --border: #334155;
+  --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+}
+
+/* =========================================
+   2. HEADER SI MENIU DROPDOWN (Setari)
+   ========================================= */
+.top-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 15px;
+}
+
+.setari-container { position: relative; }
+
+.buton-setari-icon {
+  background: transparent;
+  color: var(--text-principal);
+  border: 2px solid var(--border);
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.buton-setari-icon:hover {
+  background: var(--bg-principal);
+  border-color: var(--text-secundar);
+}
+
+.buton-setari-icon:hover svg {
+  transform: rotate(45deg);
+  transition: transform 0.3s ease;
+}
+
+.dropdown-meniu {
+  position: absolute;
+  top: 130%; 
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 0;
+  z-index: 100; 
+  overflow: hidden;
+}
+
+.meniu-header-cont {
+  padding: 10px 20px;
+  color: var(--text-secundar);
+  font-size: 0.9rem;
+}
+
+.dropdown-meniu .meniu-item {
+  background: transparent;
+  color: var(--text-principal);
+  border: none;
+  padding: 12px 20px;
+  text-align: left;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: padding-left 0.2s ease, background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dropdown-meniu .meniu-item:hover { 
+  background: var(--bg-principal); 
+  padding-left: 25px;
+}
+
+.meniu-separator { margin: 5px 0; border-top: 1px solid var(--border); border-bottom: none; }
+.text-rosu { color: #ef4444 !important; }
+
+/* =========================================
+   3. FEREASTRA MODALA (ISTORIC STUDIU)
+   ========================================= */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; 
+  width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(3px);
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.modal-content {
+  background: var(--bg-card);
+  width: 90%; 
+  max-width: 450px;
+  border-radius: 16px; 
+  padding: 25px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border);
+  max-height: 80vh; 
+  display: flex; 
+  flex-direction: column;
+  animation: scaleIn 0.3s ease-out;
+}
+
+.lista-istoric-detaliat { 
+  overflow-y: auto; 
+  padding-right: 5px; 
+}
+
+.lista-istoric-detaliat ul { 
+  list-style: none; padding: 0; margin: 0; 
+}
+
+.lista-istoric-detaliat li {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 0; 
+  border-bottom: 1px solid var(--border);
+}
+
+.lista-istoric-detaliat li:last-child { 
+  border-bottom: none; 
+}

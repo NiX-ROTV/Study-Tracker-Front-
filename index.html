@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Study Tracker</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class", /* ACEASTA E LINIA CARE REPARA BUTONUL */
+        theme: {
+          extend: {
+            colors: {
+              "surface-container-highest": "#eae8e0",
+              "surface-container-high": "#f0eee6",
+              "on-surface": "#383833",
+              "surface-container-lowest": "#ffffff",
+              "tertiary": "#845c32",
+              "on-surface-variant": "#65655e",
+              "surface-container": "#f6f3ed",
+              "secondary": "#4e6971",
+              "surface": "#fffcf7",
+              "primary": "#506b55",
+              "primary-container": "#cceacf",
+              "outline-variant": "#bbb9b2",
+              "surface-container-low": "#fcf9f3",
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+      body { font-family: 'Plus Jakarta Sans', sans-serif; }
+      .mono-label { font-family: 'Space Grotesk', monospace; }
+    </style>
+  </head>
+  
+  <body class="bg-[#fffcf7] dark:bg-[#121212] text-on-surface dark:text-gray-100 transition-colors duration-300 min-h-screen">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
