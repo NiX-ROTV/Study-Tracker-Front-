@@ -44,7 +44,7 @@ export default function Auth({
                     type="text"
                     value={inputNume}
                     onChange={e => setInputNume(e.target.value)}
-                    placeholder="ex: curator_studii"
+                    placeholder=""
                     required
                   />
                   <span className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#506b55] transition-colors">person</span>
@@ -59,7 +59,7 @@ export default function Auth({
                     type={afiseazaParola ? "text" : "password"}
                     value={inputParola}
                     onChange={e => setInputParola(e.target.value)}
-                    placeholder="••••••••"
+                    placeholder=""
                     required
                   />
                   <button
@@ -80,7 +80,7 @@ export default function Auth({
                     type={afiseazaParola ? "text" : "password"}
                     value={inputConfirmaParola}
                     onChange={e => setInputConfirmaParola(e.target.value)}
-                    placeholder="••••••••"
+                    placeholder=""
                     required
                   />
                 </div>
