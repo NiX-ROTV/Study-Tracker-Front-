@@ -77,7 +77,7 @@ function App() {
 
   const esteTextValid = (text) => {
     const cuvinte = text.trim().split(/\s+/);
-    if (cuvinte.length < 4) return { valid: false, msg: "Scrie macar 4 cuvinte despre ce ai invatat!" };
+    if (cuvinte.length < 4) return { valid: false, msg: "Pune pe pauza si scrie macar 4 cuvinte despre ce ai invatat!" };
     const areRepetitiiHidoase = /(.)\1{4,}/.test(text);
     if (areRepetitiiHidoase) return { valid: false, msg: "Nu trisa cu litere repetate!" };
     return { valid: true };

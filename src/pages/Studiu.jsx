@@ -48,8 +48,8 @@ export default function Studiu({
               </button>
 
               {dropdownMaterieDeschis && !cronometruPornit && (
-                <div className="absolute z-50 w-full mt-2 bg-surface-container-lowest dark:bg-gray-800 border border-outline-variant/20 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2">
-                  {materii.map((m) => (
+                <div className="dropdown-scroll absolute z-50 w-full mt-2 bg-surface-container-lowest dark:bg-gray-800 border border-outline-variant/20 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2" style={{ maxHeight: '13.5rem', overflowY: 'auto' }}>
+                  {[...materii].sort((a, b) => a.nume.localeCompare(b.nume, 'ro')).map((m) => (
                     <button
                       key={m._id}
                       className={`w-full text-center px-4 py-3 font-semibold transition-colors ${materieStudiu === m._id ? 'bg-primary/10 dark:bg-green-500/20 text-primary dark:text-green-400' : 'text-on-surface dark:text-white hover:bg-surface-container dark:hover:bg-gray-700'}`}

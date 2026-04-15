@@ -93,7 +93,7 @@ export default function Dashboard({
                 <p className="text-sm text-on-surface-variant dark:text-gray-400">Rang Actual</p>
                 <p className="text-3xl font-extrabold" style={{ color: rangCurent.culoare }}>{rangCurent.nume}</p>
               </div>
-              <div className="w-8 h-[1px] bg-outline-variant/30 dark:bg-gray-600"></div>
+              <div className="3 h-[3px] bg-outline-variant/30 dark:bg-gray-600"></div>
               <div>
                 <p className="text-sm text-on-surface-variant dark:text-gray-400">Tinta Urmatoare</p>
                 <p className="text-2xl font-bold opacity-80" style={{ color: urmatorulRang.culoare }}>{urmatorulRang.nume}</p>

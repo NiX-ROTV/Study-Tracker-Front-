@@ -36,8 +36,8 @@ export default function Teme({
 
               {dropdownQuestDeschis && (
                 <>
-                  <div className="absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 border border-outline-variant/20 dark:border-gray-700 rounded-2xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2">
-                    {materii.map((m) => (
+                  <div className="dropdown-scroll absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 border border-outline-variant/20 dark:border-gray-700 rounded-2xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2" style={{ maxHeight: '13.5rem', overflowY: 'auto' }}>
+                    {[...materii].sort((a, b) => a.nume.localeCompare(b.nume, 'ro')).map((m) => (
                       <button
                         key={m._id}
                         type="button"

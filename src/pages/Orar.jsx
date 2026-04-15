@@ -156,8 +156,8 @@ function ModalSlot({ slot, materii, onSalveaza, onSterge, onInchide, seIncarca }
           </button>
           {dropMaterieOpen && (
             <>
-              <div className="absolute z-50 w-full mt-2 bg-surface-container-lowest dark:bg-gray-800 border border-outline-variant/20 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden max-h-48 overflow-y-auto">
-                {materii.map((m) => (
+              <div className="dropdown-scroll absolute z-50 w-full mt-2 bg-surface-container-lowest dark:bg-gray-800 border border-outline-variant/20 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden" style={{ maxHeight: '13.5rem', overflowY: 'auto' }}>
+                {[...materii].sort((a, b) => a.nume.localeCompare(b.nume, 'ro')).map((m) => (
                   <button key={m._id}
                     className={`w-full text-left px-5 py-3 font-semibold transition-colors border-b border-outline-variant/5 last:border-0 ${materieId === m._id ? 'bg-primary/10 text-primary dark:text-green-400' : 'text-on-surface dark:text-white hover:bg-surface-container dark:hover:bg-gray-700'}`}
                     onClick={() => { setMaterieId(m._id); setDropMaterieOpen(false); }}>
@@ -262,6 +262,7 @@ function ModalSlot({ slot, materii, onSalveaza, onSterge, onInchide, seIncarca }
 function GridOrar({ oraStart, oraEnd, materii, intrari, onAdaugaBloc, onEditeazaBloc, onStergeBloc, onResetOrar, seIncarca }) {
   const [modalDeschis, setModalDeschis] = useState(false);
   const [slotSelectat, setSlotSelectat] = useState(null);
+  const [ziMobil, setZiMobil] = useState(0);
 
   const totalSloturi = timpLaSlot(oraEnd, oraStart);
 
@@ -269,16 +270,6 @@ function GridOrar({ oraStart, oraEnd, materii, intrari, onAdaugaBloc, onEditeaza
   for (let i = 0; i < totalSloturi; i++) {
     eticheteTimp.push(slotLaTimp(i, oraStart));
   }
-
-  const gasesteBlocLaSlot = (ziIdx, slotIdx) => {
-    return intrari.find(
-      (e) => e.zi === ziIdx && slotIdx >= e.slotStart && slotIdx < e.slotStart + e.sloturi
-    );
-  };
-
-  const esteStartBloc = (ziIdx, slotIdx) => {
-    return intrari.find((e) => e.zi === ziIdx && e.slotStart === slotIdx);
-  };
 
   const handleClickSlotLiber = (ziIdx, slotIdx, defaultSloturi = 2) => {
     setSlotSelectat({ zi: ziIdx, slotIdx, materie_id: '', sloturi: defaultSloturi, paritate: 'toate' });
@@ -331,6 +322,123 @@ function GridOrar({ oraStart, oraEnd, materii, intrari, onAdaugaBloc, onEditeaza
     return m?.profesor || '';
   };
 
+  // Funcție generică de randare celulă zi+slot (refolosită de ambele view-uri)
+  const randeazaCelulaSlot = (ziIdx, slotIdx, esteMobil = false) => {
+    const acoperiri = intrari.filter((e) => e.zi === ziIdx && slotIdx >= e.slotStart && slotIdx < e.slotStart + e.sloturi);
+    const inceputuri = intrari.filter((e) => e.zi === ziIdx && e.slotStart === slotIdx);
+
+    const areSpatiu = acoperiri.length === 0 || (acoperiri.length === 1 && acoperiri[0].paritate !== 'toate');
+    const slotLiberDeAdaugat = acoperiri.length === 1 ? acoperiri[0].slotStart : slotIdx;
+    const durataLiberaDeAdaugat = acoperiri.length === 1 ? acoperiri[0].sloturi : 2;
+
+    const slotH = esteMobil ? 52 : 44;
+
+    if (acoperiri.length === 0) {
+      return (
+        <div key={ziIdx}
+          className="border-l border-outline-variant/10 dark:border-gray-700/30 cursor-pointer hover:bg-primary/5 dark:hover:bg-green-500/5 transition-colors group relative"
+          onClick={() => handleClickSlotLiber(ziIdx, slotIdx)}>
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-40 transition-opacity">
+            <span className="material-symbols-outlined text-primary dark:text-green-400 text-base">add</span>
+          </div>
+        </div>
+      );
+    }
+
+    if (acoperiri.length > 0 && inceputuri.length === 0) {
+      return (
+        <div key={ziIdx}
+          className={`border-l border-outline-variant/10 dark:border-gray-700/30 ${areSpatiu ? 'cursor-pointer hover:bg-primary/5 dark:hover:bg-green-500/5 group relative' : ''}`}
+          onClick={areSpatiu ? () => handleClickSlotLiber(ziIdx, slotLiberDeAdaugat, durataLiberaDeAdaugat) : undefined}>
+          {areSpatiu && (
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-40 transition-opacity z-0">
+              <span className="material-symbols-outlined text-primary dark:text-green-400 text-base">add</span>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (inceputuri.length > 0) {
+      return (
+        <div key={ziIdx}
+          className={`border-l border-outline-variant/10 dark:border-gray-700/30 relative px-0.5 py-0.5 ${areSpatiu ? 'cursor-pointer hover:bg-primary/5 dark:hover:bg-green-500/5 group' : ''}`}
+          onClick={areSpatiu ? () => handleClickSlotLiber(ziIdx, slotLiberDeAdaugat, durataLiberaDeAdaugat) : undefined}>
+
+          {areSpatiu && (
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-40 transition-opacity z-0">
+              <span className="material-symbols-outlined text-primary dark:text-green-400 text-base">add</span>
+            </div>
+          )}
+
+          {inceputuri.map((bloc) => {
+            const mid = getMaterieId(bloc);
+            const culoare = getCuloareMaterie(mid);
+            const inaltimeBloc = bloc.sloturi;
+            const p = bloc.paritate || 'toate';
+
+            let inaltimeCalculata = `calc(${inaltimeBloc * slotH}px - 4px)`;
+            let topCalculat = '2px';
+            let zIndex = 10;
+
+            if (p === 'impara') {
+              inaltimeCalculata = `calc(${(inaltimeBloc * slotH) / 2}px - 4px)`;
+              topCalculat = '2px';
+              zIndex = 11;
+            } else if (p === 'para') {
+              inaltimeCalculata = `calc(${(inaltimeBloc * slotH) / 2}px - 4px)`;
+              topCalculat = `calc(${(inaltimeBloc * slotH) / 2}px + 2px)`;
+              zIndex = 11;
+            }
+
+            return (
+              <button key={bloc._id}
+                onClick={(e) => { e.stopPropagation(); handleClickBloc(bloc); }}
+                className={`absolute ${culoare.bg} ${culoare.text} border ${culoare.border} rounded-lg ${esteMobil ? 'p-2' : 'p-1 sm:p-1.5'} overflow-hidden cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all duration-200 group/btn text-left`}
+                style={{
+                  height: inaltimeCalculata,
+                  width: 'calc(100% - 4px)',
+                  left: '2px',
+                  top: topCalculat,
+                  zIndex: zIndex
+                }}>
+                <div className="flex flex-col h-full leading-tight">
+                  <p className={`font-bold truncate ${esteMobil ? 'text-sm' : 'text-[10px] sm:text-[11px]'}`}>{getMaterieNume(bloc)}</p>
+                  {p === 'toate' && inaltimeBloc >= 2 && (
+                    <p className={`mono-label opacity-60 mt-0.5 truncate ${esteMobil ? 'text-xs' : 'text-[8px] sm:text-[9px]'}`}>
+                      {slotLaTimp(bloc.slotStart, oraStart)} - {slotLaTimp(bloc.slotStart + bloc.sloturi, oraStart)}
+                    </p>
+                  )}
+                  {(p === 'toate' ? inaltimeBloc >= 2 : inaltimeBloc >= 4) && bloc.sala && (
+                    <p className={`mono-label opacity-50 truncate flex items-center gap-0.5 ${esteMobil ? 'text-xs' : 'text-[8px] sm:text-[9px]'}`}>
+                      <span className="material-symbols-outlined" style={{ fontSize: esteMobil ? '12px' : '10px' }}>location_on</span>
+                      {bloc.sala}
+                    </p>
+                  )}
+                  {(p === 'toate' ? inaltimeBloc >= 3 : inaltimeBloc >= 4) && getMaterieProfesor(bloc) && (
+                    <p className={`mono-label opacity-40 mt-auto truncate flex-1 block ${esteMobil ? 'text-xs' : 'text-[8px] sm:text-[9px]'}`}>
+                      Prof. {getMaterieProfesor(bloc)}
+                    </p>
+                  )}
+                  {p !== 'toate' && (
+                    <div className={`mt-auto place-self-start mono-label tracking-tighter uppercase font-bold rounded px-1.5 py-0.5 min-w-max ${esteMobil ? 'text-[9px]' : 'text-[7.5px] sm:text-[8px]'} ${p === 'impara' ? 'bg-indigo-500/20 text-indigo-700 dark:text-indigo-400' : 'bg-fuchsia-500/20 text-fuchsia-700 dark:text-fuchsia-400'}`}>
+                      {p === 'impara' ? 'Impară' : 'Pară'}
+                    </div>
+                  )}
+                </div>
+                <div className="absolute top-1 right-1 opacity-0 group-hover/btn:opacity-60 transition-opacity z-20">
+                  <Edit3 size={12} />
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between px-1">
@@ -345,7 +453,8 @@ function GridOrar({ oraStart, oraEnd, materii, intrari, onAdaugaBloc, onEditeaza
         </button>
       </div>
 
-      <div className="bg-surface-container-lowest dark:bg-[#1e1e1e] rounded-[1.5rem] shadow-[0px_20px_40px_rgba(56,56,51,0.04)] border border-outline-variant/20 dark:border-gray-700 overflow-hidden">
+      {/* ═══════ DESKTOP VIEW (ascuns pe mobil) ═══════ */}
+      <div className="hidden sm:block bg-surface-container-lowest dark:bg-[#1e1e1e] rounded-[1.5rem] shadow-[0px_20px_40px_rgba(56,56,51,0.04)] border border-outline-variant/20 dark:border-gray-700 overflow-hidden">
         
         {/* Header cu zilele */}
         <div className="grid border-b border-outline-variant/20 dark:border-gray-700" style={{ gridTemplateColumns: '60px repeat(5, 1fr)' }}>
@@ -354,8 +463,7 @@ function GridOrar({ oraStart, oraEnd, materii, intrari, onAdaugaBloc, onEditeaza
           </div>
           {ZILE.map((zi, i) => (
             <div key={i} className="p-3 text-center border-l border-outline-variant/10 dark:border-gray-700/50">
-              <span className="hidden sm:inline mono-label text-xs font-bold uppercase tracking-widest text-on-surface-variant dark:text-gray-400">{zi}</span>
-              <span className="sm:hidden mono-label text-xs font-bold uppercase tracking-widest text-on-surface-variant dark:text-gray-400">{ZILE_SCURT[i]}</span>
+              <span className="mono-label text-xs font-bold uppercase tracking-widest text-on-surface-variant dark:text-gray-400">{zi}</span>
             </div>
           ))}
         </div>
@@ -373,121 +481,50 @@ function GridOrar({ oraStart, oraEnd, materii, intrari, onAdaugaBloc, onEditeaza
                 )}
               </div>
 
-              {ZILE.map((_, ziIdx) => {
-                const acoperiri = intrari.filter((e) => e.zi === ziIdx && slotIdx >= e.slotStart && slotIdx < e.slotStart + e.sloturi);
-                const inceputuri = intrari.filter((e) => e.zi === ziIdx && e.slotStart === slotIdx);
-
-                const areSpatiu = acoperiri.length === 0 || (acoperiri.length === 1 && acoperiri[0].paritate !== 'toate');
-                const slotLiberDeAdaugat = acoperiri.length === 1 ? acoperiri[0].slotStart : slotIdx;
-                const durataLiberaDeAdaugat = acoperiri.length === 1 ? acoperiri[0].sloturi : 2;
-
-                if (acoperiri.length === 0) {
-                  return (
-                    <div key={ziIdx}
-                      className="border-l border-outline-variant/10 dark:border-gray-700/30 cursor-pointer hover:bg-primary/5 dark:hover:bg-green-500/5 transition-colors group relative"
-                      onClick={() => handleClickSlotLiber(ziIdx, slotIdx)}>
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-40 transition-opacity">
-                        <span className="material-symbols-outlined text-primary dark:text-green-400 text-base">add</span>
-                      </div>
-                    </div>
-                  );
-                }
-
-                if (acoperiri.length > 0 && inceputuri.length === 0) {
-                  return (
-                    <div key={ziIdx} 
-                         className={`border-l border-outline-variant/10 dark:border-gray-700/30 ${areSpatiu ? 'cursor-pointer hover:bg-primary/5 dark:hover:bg-green-500/5 group relative' : ''}`}
-                         onClick={areSpatiu ? () => handleClickSlotLiber(ziIdx, slotLiberDeAdaugat, durataLiberaDeAdaugat) : undefined}>
-                       {areSpatiu && (
-                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-40 transition-opacity z-0">
-                           <span className="material-symbols-outlined text-primary dark:text-green-400 text-base">add</span>
-                         </div>
-                       )}
-                    </div>
-                  );
-                }
-
-                if (inceputuri.length > 0) {
-                  return (
-                    <div key={ziIdx} 
-                         className={`border-l border-outline-variant/10 dark:border-gray-700/30 relative px-0.5 py-0.5 ${areSpatiu ? 'cursor-pointer hover:bg-primary/5 dark:hover:bg-green-500/5 group' : ''}`}
-                         onClick={areSpatiu ? () => handleClickSlotLiber(ziIdx, slotLiberDeAdaugat, durataLiberaDeAdaugat) : undefined}>
-                      
-                      {areSpatiu && (
-                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-40 transition-opacity z-0">
-                           <span className="material-symbols-outlined text-primary dark:text-green-400 text-base">add</span>
-                         </div>
-                      )}
-
-                      {inceputuri.map((bloc) => {
-                        const mid = getMaterieId(bloc);
-                        const culoare = getCuloareMaterie(mid);
-                        const inaltimeBloc = bloc.sloturi;
-                        const p = bloc.paritate || 'toate';
-
-                        let inaltimeCalculata = `calc(${inaltimeBloc * 44}px - 4px)`;
-                        let topCalculat = '2px';
-                        let zIndex = 10;
-                        
-                        if (p === 'impara') {
-                          inaltimeCalculata = `calc(${(inaltimeBloc * 44) / 2}px - 4px)`;
-                          topCalculat = '2px';
-                          zIndex = 11;
-                        } else if (p === 'para') {
-                          inaltimeCalculata = `calc(${(inaltimeBloc * 44) / 2}px - 4px)`;
-                          topCalculat = `calc(${(inaltimeBloc * 44) / 2}px + 2px)`;
-                          zIndex = 11;
-                        }
-
-                        return (
-                          <button key={bloc._id} 
-                            onClick={(e) => { e.stopPropagation(); handleClickBloc(bloc); }}
-                            className={`absolute ${culoare.bg} ${culoare.text} border ${culoare.border} rounded-lg p-1 sm:p-1.5 overflow-hidden cursor-pointer hover:shadow-md hover:scale-[1.02] transition-all duration-200 group/btn text-left`}
-                            style={{ 
-                              height: inaltimeCalculata,
-                              width: 'calc(100% - 4px)',
-                              left: '2px',
-                              top: topCalculat,
-                              zIndex: zIndex
-                            }}>
-                            <div className="flex flex-col h-full leading-tight">
-                              <p className="font-bold text-[10px] sm:text-[11px] truncate">{getMaterieNume(bloc)}</p>
-                              {p === 'toate' && inaltimeBloc >= 2 && (
-                                <p className="mono-label text-[8px] sm:text-[9px] opacity-60 mt-0.5 truncate flex flex-wrap gap-1">
-                                  {slotLaTimp(bloc.slotStart, oraStart)} - {slotLaTimp(bloc.slotStart + bloc.sloturi, oraStart)}
-                                </p>
-                              )}
-                              {(p === 'toate' ? inaltimeBloc >= 2 : inaltimeBloc >= 4) && bloc.sala && (
-                                <p className="mono-label text-[8px] sm:text-[9px] opacity-50 truncate flex items-center gap-0.5">
-                                  <span className="material-symbols-outlined" style={{ fontSize: '10px' }}>location_on</span>
-                                  {bloc.sala}
-                                </p>
-                              )}
-                              {(p === 'toate' ? inaltimeBloc >= 3 : inaltimeBloc >= 4) && getMaterieProfesor(bloc) && (
-                                <p className="mono-label text-[8px] sm:text-[9px] opacity-40 mt-auto truncate flex-1 block">
-                                  Prof. {getMaterieProfesor(bloc)}
-                                </p>
-                              )}
-                              {p !== 'toate' && (
-                                <div className={`mt-auto place-self-start text-[7.5px] sm:text-[8px] mono-label tracking-tighter uppercase font-bold rounded px-1.5 py-0.5 min-w-max ${p === 'impara' ? 'bg-indigo-500/20 text-indigo-700 dark:text-indigo-400' : 'bg-fuchsia-500/20 text-fuchsia-700 dark:text-fuchsia-400'}`}>
-                                  {p === 'impara' ? 'Impară' : 'Pară'}
-                                </div>
-                              )}
-                            </div>
-                            <div className="absolute top-1 right-1 opacity-0 group-hover/btn:opacity-60 transition-opacity z-20">
-                              <Edit3 size={12} />
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  );
-                }
-
-                return null;
-              })}
+              {ZILE.map((_, ziIdx) => randeazaCelulaSlot(ziIdx, slotIdx, false))}
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* ═══════ MOBILE VIEW (ascuns pe desktop) ═══════ */}
+      <div className="sm:hidden space-y-3">
+        {/* Taburi zile */}
+        <div className="flex gap-1 bg-surface-container dark:bg-gray-900 rounded-xl p-1">
+          {ZILE.map((zi, i) => (
+            <button key={i}
+              onClick={() => setZiMobil(i)}
+              className={`flex-1 py-2.5 rounded-lg mono-label text-xs font-bold uppercase tracking-wider transition-all duration-200 ${ziMobil === i
+                ? 'bg-primary dark:bg-green-600 text-white shadow-md'
+                : 'text-on-surface-variant dark:text-gray-400 hover:bg-surface-container-high dark:hover:bg-gray-800'
+              }`}>
+              {ZILE_SCURT[i]}
+            </button>
+          ))}
+        </div>
+
+        {/* Grila cu o singură zi */}
+        <div className="bg-surface-container-lowest dark:bg-[#1e1e1e] rounded-2xl shadow-[0px_20px_40px_rgba(56,56,51,0.04)] border border-outline-variant/20 dark:border-gray-700 overflow-hidden">
+          <div className="px-4 py-3 border-b border-outline-variant/20 dark:border-gray-700">
+            <h3 className="font-bold text-on-surface dark:text-white text-center">{ZILE[ziMobil]}</h3>
+          </div>
+
+          <div className="relative">
+            {eticheteTimp.map((timp, slotIdx) => (
+              <div key={slotIdx}
+                className={`grid ${slotIdx % 2 === 0 ? 'border-t border-outline-variant/15 dark:border-gray-700/40' : 'border-t border-outline-variant/5 dark:border-gray-700/20'}`}
+                style={{ gridTemplateColumns: '50px 1fr', minHeight: '52px' }}>
+
+                <div className="flex items-start justify-end pr-2 pt-1.5">
+                  {slotIdx % 2 === 0 && (
+                    <span className="mono-label text-[10px] text-on-surface-variant/50 dark:text-gray-500 font-medium tabular-nums">{timp}</span>
+                  )}
+                </div>
+
+                {randeazaCelulaSlot(ziMobil, slotIdx, true)}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -783,24 +820,7 @@ export default function Orar({
   return (
     <main className="mt-8 px-4 sm:px-6 max-w-5xl mx-auto space-y-12 pb-32">
 
-      {/* FAZA 1 sau FAZA 2 */}
-      {!orarConfigurat ? (
-        <SetupWizard onSalveaza={handleSetup} seIncarca={seIncarca} />
-      ) : (
-        <GridOrar
-          oraStart={oraStart}
-          oraEnd={oraEnd}
-          materii={materii}
-          intrari={intrariOrar}
-          onAdaugaBloc={handleAdaugaBloc}
-          onEditeazaBloc={handleEditeazaBloc}
-          onStergeBloc={handleStergeBloc}
-          onResetOrar={handleReset}
-          seIncarca={seIncarca}
-        />
-      )}
-
-      {/* Secțiunea de adăugare materie */}
+      {/* Secțiunea de adăugare materie - PRIMUL */}
       <section className="space-y-6">
         <div className="flex items-baseline justify-between">
           <h2 className="text-2xl font-extrabold tracking-tight text-on-surface dark:text-white">Adaugă o materie nouă</h2>
@@ -837,6 +857,35 @@ export default function Orar({
           </form>
         </div>
       </section>
+
+      {/* FAZA 1 sau FAZA 2 - orarul */}
+      {!orarConfigurat ? (
+        <SetupWizard onSalveaza={handleSetup} seIncarca={seIncarca} />
+      ) : (
+        <div
+          className="relative"
+          onClick={materii.length < 2 ? () => toast.warning('Te rugăm să introduci cel puțin două materii înainte de a configura orarul!') : undefined}
+        >
+          {materii.length < 2 && (
+            <div className="absolute inset-0 z-20 rounded-2xl cursor-not-allowed" />
+          )}
+          <div className={materii.length < 2 ? 'opacity-50 pointer-events-none select-none' : ''}>
+            <GridOrar
+              oraStart={oraStart}
+              oraEnd={oraEnd}
+              materii={materii}
+              intrari={intrariOrar}
+              onAdaugaBloc={handleAdaugaBloc}
+              onEditeazaBloc={handleEditeazaBloc}
+              onStergeBloc={handleStergeBloc}
+              onResetOrar={handleReset}
+              seIncarca={seIncarca}
+            />
+          </div>
+        </div>
+      )}
+
+
 
       {/* Lista de materii */}
       <section className="space-y-6">
