@@ -15,7 +15,7 @@ import Orar from './pages/Orar'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 
-const API_BASE_URL = 'http://localhost:5000'; // Schimbă cu URL-ul de producție la deployment
+const API_BASE_URL = 'http://192.168.0.143:5000'; // Schimbă cu URL-ul de producție la deployment
 
 const DynamicBackground = ({ children, modIntunecat }) => {
   const location = useLocation();

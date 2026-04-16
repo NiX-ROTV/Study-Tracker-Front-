@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
   const [seIncarca, setSeIncarca] = useState(false);
-  const API_BASE_URL = 'http://localhost:5000';
+  const API_BASE_URL = 'http://192.168.0.143:5000';
 
   const handleForgot = async (e) => {
     e.preventDefault();
