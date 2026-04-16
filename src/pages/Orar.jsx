@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ChevronUp, ChevronDown, X, Trash2, Edit3 } from 'lucide-react';
 import { toast } from 'sonner';
+const API_BASE_URL = 'http://192.168.0.143:5000';
 
 // ─── Constante ────────────────────────────────────────────
 const ZILE = ['Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri'];
@@ -426,8 +427,22 @@ function GridOrar({ oraStart, oraEnd, materii, intrari, onAdaugaBloc, onEditeaza
                     </div>
                   )}
                 </div>
-                <div className="absolute top-1 right-1 opacity-0 group-hover/btn:opacity-60 transition-opacity z-20">
-                  <Edit3 size={12} />
+                <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover/btn:opacity-100 transition-opacity z-20">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.confirm(`Ștergi intervalul pentru ${getMaterieNume(bloc)}?`)) {
+                        onStergeBloc(bloc._id);
+                      }
+                    }}
+                    className="p-1 rounded bg-red-500/20 hover:bg-red-500/40 text-red-700 dark:text-red-400 transition-colors"
+                    title="Șterge rapid"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                  <div className="p-1 rounded bg-primary/20 hover:bg-primary/40 text-primary dark:text-green-400 transition-colors">
+                    <Edit3 size={12} />
+                  </div>
                 </div>
               </button>
             );
@@ -609,7 +624,7 @@ function ModalEditMaterie({ materie, onSalveaza, onInchide, seIncarca }) {
                 id="exam-edit" type="checkbox" />
               <span className="material-symbols-outlined absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none left-0.5 text-lg">check</span>
             </div>
-            <label className="text-sm font-medium text-on-surface-variant dark:text-gray-400 cursor-pointer" htmlFor="exam-edit">Are teză?</label>
+            <label className="text-sm font-medium text-on-surface-variant dark:text-gray-400 cursor-pointer" htmlFor="exam-edit">Are examen?</label>
           </div>
         </div>
 
@@ -653,7 +668,7 @@ export default function Orar({
   useEffect(() => {
     const incarcaOrar = async () => {
       try {
-        const raspuns = await fetch('https://study-tracker-production-cbb9.up.railway.app/api/schedule', {
+        const raspuns = await fetch(`${API_BASE_URL}/api/schedule`, {
           headers: { 'Authorization': token }
         });
         const date = await raspuns.json();
@@ -675,7 +690,7 @@ export default function Orar({
   // ─── Reîncarcă orarul (pentru a reflecta modificări materii) ─
   const reincarcaOrar = async () => {
     try {
-      const raspuns = await fetch('https://study-tracker-production-cbb9.up.railway.app/api/schedule', {
+      const raspuns = await fetch(`${API_BASE_URL}/api/schedule`, {
         headers: { 'Authorization': token }
       });
       const date = await raspuns.json();
@@ -703,7 +718,7 @@ export default function Orar({
   const handleSetup = async (start, end) => {
     setSeIncarca(true);
     try {
-      const raspuns = await fetch('https://study-tracker-production-cbb9.up.railway.app/api/schedule/config', {
+      const raspuns = await fetch(`${API_BASE_URL}/api/schedule/config`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': token },
         body: JSON.stringify({ oraStart: start, oraEnd: end })
@@ -738,7 +753,7 @@ export default function Orar({
   const handleAdaugaBloc = async (zi, slotStart, sloturi, materie_id, sala, paritate) => {
     setSeIncarca(true);
     try {
-      const raspuns = await fetch('https://study-tracker-production-cbb9.up.railway.app/api/schedule/block', {
+      const raspuns = await fetch(`${API_BASE_URL}/api/schedule/block`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': token },
         body: JSON.stringify({ zi, slotStart, sloturi, materie_id, sala, paritate })
@@ -761,7 +776,7 @@ export default function Orar({
   const handleEditeazaBloc = async (blockId, materie_id, sloturi, sala, paritate) => {
     setSeIncarca(true);
     try {
-      const raspuns = await fetch(`https://study-tracker-production-cbb9.up.railway.app/api/schedule/block/${blockId}`, {
+      const raspuns = await fetch(`${API_BASE_URL}/api/schedule/block/${blockId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': token },
         body: JSON.stringify({ materie_id, sloturi, sala, paritate })
@@ -784,7 +799,7 @@ export default function Orar({
   const handleStergeBloc = async (blockId) => {
     setSeIncarca(true);
     try {
-      const raspuns = await fetch(`https://study-tracker-production-cbb9.up.railway.app/api/schedule/block/${blockId}`, {
+      const raspuns = await fetch(`${API_BASE_URL}/api/schedule/block/${blockId}`, {
         method: 'DELETE',
         headers: { 'Authorization': token }
       });
@@ -849,7 +864,7 @@ export default function Orar({
                   id="exam" type="checkbox" />
                 <span className="material-symbols-outlined absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none left-0.5 text-lg">check</span>
               </div>
-              <label className="text-sm font-medium text-on-surface-variant dark:text-gray-400 cursor-pointer" htmlFor="exam">Această materie are teză?</label>
+              <label className="text-sm font-medium text-on-surface-variant dark:text-gray-400 cursor-pointer" htmlFor="exam">Această materie are examen?</label>
             </div>
             <button type="submit" className="w-full bg-gradient-to-br from-[#506b55] to-[#cceacf] dark:from-[#3d5341] dark:to-[#506b55] text-white font-bold py-4 rounded-full shadow-lg active:scale-95 duration-200 transition-transform">
               Salvează Materia
@@ -912,7 +927,7 @@ export default function Orar({
                       <p className="mono-label text-xs text-on-surface-variant dark:text-gray-400 uppercase tracking-wide">Prof. {m.profesor || "Nespecificat"}</p>
                       {m.are_teza && (
                         <div className="inline-flex items-center bg-error/10 dark:bg-red-900/20 text-error dark:text-red-400 px-2 py-0.5 rounded-md">
-                          <span className="mono-label text-[9px] font-bold tracking-tighter uppercase">ARE TEZĂ</span>
+                          <span className="mono-label text-[9px] font-bold tracking-tighter uppercase">ARE EXAMEN</span>
                         </div>
                       )}
                     </div>
