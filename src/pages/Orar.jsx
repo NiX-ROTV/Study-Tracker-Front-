@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ChevronUp, ChevronDown, X, Trash2, Edit3 } from 'lucide-react';
 import { toast } from 'sonner';
-const API_BASE_URL = 'http://192.168.0.143:5000';
+const API_BASE_URL = 'https://study-tracker-production-cbb9.up.railway.app';
 
 // ─── Constante ────────────────────────────────────────────
 const ZILE = ['Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri'];
