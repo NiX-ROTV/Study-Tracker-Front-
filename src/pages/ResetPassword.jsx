@@ -9,7 +9,7 @@ export default function ResetPassword() {
   const [parola, setParola] = useState('');
   const [confirmaParola, setConfirmaParola] = useState('');
   const [seIncarca, setSeIncarca] = useState(false);
-  const API_BASE_URL = 'https://study-tracker-production-cbb9.up.railway.app';
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   const handleReset = async (e) => {
     e.preventDefault();

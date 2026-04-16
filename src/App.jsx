@@ -15,7 +15,7 @@ import Orar from './pages/Orar'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 
-const API_BASE_URL = 'https://study-tracker-production-cbb9.up.railway.app'; // Schimbă cu URL-ul de producție la deployment
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const DynamicBackground = ({ children, modIntunecat }) => {
   const location = useLocation();
