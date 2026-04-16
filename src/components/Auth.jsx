@@ -1,9 +1,10 @@
 import { Eye, EyeOff } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Auth({
   ecranCurent,
-  inputNume,
-  setInputNume,
+  inputEmail,
+  setInputEmail,
   inputParola,
   setInputParola,
   afiseazaParola,
@@ -37,17 +38,17 @@ export default function Auth({
           <form className="space-y-6" onSubmit={gestioneazaAutentificarea}>
             <div className="space-y-5">
               <div className="space-y-1.5">
-                <label className="mono-label text-[10px] uppercase tracking-widest text-[#65655e] ml-4 block">Nume Utilizator</label>
+                <label className="mono-label text-[10px] uppercase tracking-widest text-[#65655e] ml-4 block">Email</label>
                 <div className="relative group">
                   <input
                     className="w-full h-14 px-6 rounded-full bg-[#f6f3ed] border-none focus:ring-4 focus:ring-[#506b55]/10 focus:bg-white text-[#383833] placeholder:text-gray-300 transition-all duration-300"
-                    type="text"
-                    value={inputNume}
-                    onChange={e => setInputNume(e.target.value)}
+                    type="email"
+                    value={inputEmail}
+                    onChange={e => setInputEmail(e.target.value)}
                     placeholder=""
                     required
                   />
-                  <span className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#506b55] transition-colors">person</span>
+                  <span className="material-symbols-outlined absolute right-5 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-[#506b55] transition-colors">mail</span>
                 </div>
               </div>
 
@@ -70,6 +71,13 @@ export default function Auth({
                     {afiseazaParola ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
+                {ecranCurent === 'login' && (
+                  <div className="flex justify-end px-2">
+                    <Link to="/forgot-password" title="Resetează parola" className="text-[10px] font-bold text-[#506b55] hover:underline underline-offset-4 tracking-wider uppercase opacity-70 hover:opacity-100 transition-all">
+                      Ai uitat parola?
+                    </Link>
+                  </div>
+                )}
               </div>
 
               {ecranCurent === 'register' && (

@@ -12,6 +12,10 @@ import Dashboard from './pages/Dashboard'
 import Studiu from './pages/Studiu'
 import Teme from './pages/Teme'
 import Orar from './pages/Orar'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
+
+const API_BASE_URL = 'http://localhost:5000'; // Schimbă cu URL-ul de producție la deployment
 
 const DynamicBackground = ({ children, modIntunecat }) => {
   const location = useLocation();
@@ -36,7 +40,7 @@ function App() {
   const [token, setToken] = useState(null)
 
   const [ecranCurent, setEcranCurent] = useState('login')
-  const [inputNume, setInputNume] = useState('')
+  const [inputEmail, setInputEmail] = useState('')
   const [inputParola, setInputParola] = useState('')
   const [inputConfirmaParola, setInputConfirmaParola] = useState('')
   const [afiseazaParola, setAfiseazaParola] = useState(false)
@@ -68,10 +72,10 @@ function App() {
 
   useEffect(() => {
     const tokenSalvat = localStorage.getItem('studyToken');
-    const numeSalvat = localStorage.getItem('studyUser');
-    if (tokenSalvat && numeSalvat) {
+    const emailSalvat = localStorage.getItem('studyEmail');
+    if (tokenSalvat && emailSalvat) {
       setToken(tokenSalvat);
-      setUtilizatorLogat(numeSalvat);
+      setUtilizatorLogat(emailSalvat);
     }
   }, [])
 
@@ -85,39 +89,42 @@ function App() {
 
   const gestioneazaAutentificarea = async (e) => {
     e.preventDefault();
-    if (!inputNume || !inputParola) return toast("Completeaza ambele campuri!");
+    if (!inputEmail || !inputParola) return toast("Completează ambele câmpuri!");
     if (ecranCurent === 'register' && inputParola !== inputConfirmaParola) {
       return toast("Parolele nu coincid!");
     }
     const endpoint = ecranCurent === 'login' ? '/api/login' : '/api/register';
     try {
-      const raspuns = await fetch(`https://study-tracker-production-cbb9.up.railway.app${endpoint}`, {
+      const raspuns = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: inputNume, parola: inputParola })
+        body: JSON.stringify({ email: inputEmail, parola: inputParola })
       });
       const date = await raspuns.json();
       if (raspuns.ok) {
         if (ecranCurent === 'register') {
-          toast("Cont creat! Logheaza-te.");
+          toast("Cont creat! Loghează-te.");
           setEcranCurent('login');
           setInputParola('');
           setInputConfirmaParola('');
         } else {
           localStorage.setItem('studyToken', date.token);
-          localStorage.setItem('studyUser', date.username);
+          localStorage.setItem('studyEmail', date.email);
           setToken(date.token);
-          setUtilizatorLogat(date.username);
+          setUtilizatorLogat(date.email);
         }
       } else {
-        toast(date.error || "Eroare la autentificare");
+        toast.error(date.error || "Eroare la autentificare");
       }
-    } catch (eroare) { console.log("Eroare server:", eroare); }
+    } catch (eroare) { 
+      console.log("Eroare server:", eroare); 
+      toast.error("Serverul nu răspunde. Verifică dacă este pornit!");
+    }
   }
 
   const logOut = () => {
     localStorage.removeItem('studyToken');
-    localStorage.removeItem('studyUser');
+    localStorage.removeItem('studyEmail');
     setToken(null);
     setUtilizatorLogat(null);
     setMeniuSetariDeschis(false);
@@ -129,7 +136,7 @@ function App() {
     const confirmare = window.confirm("ESTI SIGUR? Aceasta actiune va sterge DEFINITIV contul. Nu exista cale de intoarcere!");
     if (!confirmare) return;
     try {
-      const raspuns = await fetch('https://study-tracker-production-cbb9.up.railway.app/api/user', {
+      const raspuns = await fetch(`${API_BASE_URL}/api/user`, {
         method: 'DELETE',
         headers: { 'Authorization': token }
       });
@@ -146,7 +153,7 @@ function App() {
   const incarcaMateriile = async () => {
     if (!token) return;
     try {
-      const raspuns = await fetch('https://study-tracker-production-cbb9.up.railway.app/api/subjects', { headers: { 'Authorization': token } });
+      const raspuns = await fetch(`${API_BASE_URL}/api/subjects`, { headers: { 'Authorization': token } });
       const date = await raspuns.json();
       if (raspuns.ok) setMaterii(date);
       else if (raspuns.status === 400 || raspuns.status === 401) logOut();
@@ -156,7 +163,7 @@ function App() {
   const incarcaIstoric = async () => {
     if (!token) return;
     try {
-      const raspuns = await fetch('https://study-tracker-production-cbb9.up.railway.app/api/sessions', { headers: { 'Authorization': token } });
+      const raspuns = await fetch(`${API_BASE_URL}/api/sessions`, { headers: { 'Authorization': token } });
       const date = await raspuns.json();
       if (raspuns.ok) setIstoricSesiuni(date);
       else if (raspuns.status === 400 || raspuns.status === 401) logOut();
@@ -166,7 +173,7 @@ function App() {
   const incarcaTeme = async () => {
     if (!token) return;
     try {
-      const raspuns = await fetch('https://study-tracker-production-cbb9.up.railway.app/api/homework', { headers: { 'Authorization': token } });
+      const raspuns = await fetch(`${API_BASE_URL}/api/homework`, { headers: { 'Authorization': token } });
       const date = await raspuns.json();
       if (raspuns.ok) setIstoricTeme(date);
     } catch (e) { console.log(e) }
@@ -187,7 +194,7 @@ function App() {
     if (!v.valid) return toast(v.msg);
 
     try {
-      const raspuns = await fetch('https://study-tracker-production-cbb9.up.railway.app/api/homework', {
+      const raspuns = await fetch(`${API_BASE_URL}/api/homework`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -211,7 +218,7 @@ function App() {
     e.preventDefault();
     if (numeNou.trim() === "") return toast("Scrie un nume!");
     try {
-      const raspuns = await fetch('https://study-tracker-production-cbb9.up.railway.app/api/subjects', {
+      const raspuns = await fetch(`${API_BASE_URL}/api/subjects`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': token },
         body: JSON.stringify({ nume: numeNou, profesor: profesorNou, are_teza: areTezaNou })
@@ -223,7 +230,7 @@ function App() {
   const stergeMaterie = async (id) => {
     if (!window.confirm("Sigur stergi materia?")) return;
     try {
-      const raspuns = await fetch(`https://study-tracker-production-cbb9.up.railway.app/api/subjects/${id}`, {
+      const raspuns = await fetch(`${API_BASE_URL}/api/subjects/${id}`, {
         method: 'DELETE', headers: { 'Authorization': token }
       });
       if (raspuns.ok) incarcaMateriile();
@@ -232,7 +239,7 @@ function App() {
 
   const editeazaMaterie = async (id, dateNoi) => {
     try {
-      const raspuns = await fetch(`https://study-tracker-production-cbb9.up.railway.app/api/subjects/${id}`, {
+      const raspuns = await fetch(`${API_BASE_URL}/api/subjects/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': token },
         body: JSON.stringify(dateNoi)
@@ -259,7 +266,7 @@ function App() {
     const materieSelectata = materii.find(m => m._id === materieStudiu);
     const numeDeSalvat = materieSelectata ? materieSelectata.nume : "Materie Necunoscuta";
     try {
-      const raspuns = await fetch('https://study-tracker-production-cbb9.up.railway.app/api/sessions', {
+      const raspuns = await fetch(`${API_BASE_URL}/api/sessions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': token },
         body: JSON.stringify({ materie_id: materieStudiu, materie_nume: numeDeSalvat, timp_secunde: timpSecunde })
@@ -361,25 +368,6 @@ function App() {
     }
   }
 
-  if (!utilizatorLogat) {
-    return (
-      <Auth
-        ecranCurent={ecranCurent}
-        setEcranCurent={setEcranCurent}
-        inputNume={inputNume}
-        setInputNume={setInputNume}
-        inputParola={inputParola}
-        setInputParola={setInputParola}
-        afiseazaParola={afiseazaParola}
-        setAfiseazaParola={setAfiseazaParola}
-        inputConfirmaParola={inputConfirmaParola}
-        setInputConfirmaParola={setInputConfirmaParola}
-        gestioneazaAutentificarea={gestioneazaAutentificarea}
-        schimbaEcranulDeAuth={schimbaEcranulDeAuth}
-      />
-    );
-  }
-
   // Tabelul de ranguri pentru a calcula ce urmeaza
   const totalSecundeAdunate = istoricSesiuni.reduce((tot, ses) => tot + ses.timp_secunde, 0);
   const totalXPStudiu = Math.floor(totalSecundeAdunate / 60) * 10;
@@ -404,119 +392,143 @@ function App() {
 
   return (
     <Router>
-      <DynamicBackground modIntunecat={modIntunecat}>
-        <Toaster richColors position="top-center" />
+      <Toaster richColors position="top-center" />
+      <Routes>
+        {/* Public Routes - Accessible without login */}
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-        <TopBar
-          setariRef={setariRef}
-          meniuSetariDeschis={meniuSetariDeschis}
-          setMeniuSetariDeschis={setMeniuSetariDeschis}
-          utilizatorLogat={utilizatorLogat}
-          modIntunecat={modIntunecat}
-          setModIntunecat={setModIntunecat}
-          setModalIstoricDeschis={setModalIstoricDeschis}
-          stergeContul={stergeContul}
-          logOut={logOut}
-        />
-
-        <div className="flex flex-col items-center gap-4 py-8 relative z-10">
-          <h1 className="text-4xl font-extrabold tracking-tight text-on-surface dark:text-white">Study Tracker</h1>
-          <Navigation />
-        </div>
-
-        <Routes>
-          <Route path="/" element={
-            <Dashboard
-              nivelCurent={nivelCurent}
-              rangCurent={rangCurent}
-              calculeazaStreak={calculeazaStreak}
-              formateazaTimp={formateazaTimp}
-              totalSecundeAdunate={totalSecundeAdunate}
-              xpInNivelCurent={xpInNivelCurent}
-              xpPerNivel={xpPerNivel}
-              procentajBara={procentajBara}
-              totalXPStudiu={totalXPStudiu}
-              totalXPTeme={totalXPTeme}
-              urmatorulRang={urmatorulRang}
-              topMaterii={topMaterii}
+        {/* Protected app area vs Auth area */}
+        <Route path="*" element={
+          !utilizatorLogat ? (
+            <Auth
+              ecranCurent={ecranCurent}
+              setEcranCurent={setEcranCurent}
+              inputEmail={inputEmail}
+              setInputEmail={setInputEmail}
+              inputParola={inputParola}
+              setInputParola={setInputParola}
+              afiseazaParola={afiseazaParola}
+              setAfiseazaParola={setAfiseazaParola}
+              inputConfirmaParola={inputConfirmaParola}
+              setInputConfirmaParola={setInputConfirmaParola}
+              gestioneazaAutentificarea={gestioneazaAutentificarea}
+              schimbaEcranulDeAuth={schimbaEcranulDeAuth}
             />
-          } />
+          ) : (
+            <DynamicBackground modIntunecat={modIntunecat}>
+              <TopBar
+                setariRef={setariRef}
+                meniuSetariDeschis={meniuSetariDeschis}
+                setMeniuSetariDeschis={setMeniuSetariDeschis}
+                utilizatorLogat={utilizatorLogat}
+                modIntunecat={modIntunecat}
+                setModIntunecat={setModIntunecat}
+                setModalIstoricDeschis={setModalIstoricDeschis}
+                stergeContul={stergeContul}
+                logOut={logOut}
+              />
 
-          <Route path="/studiu" element={
-            <Studiu
-              cronometruPornit={cronometruPornit}
-              dropdownMaterieDeschis={dropdownMaterieDeschis}
-              setDropdownMaterieDeschis={setDropdownMaterieDeschis}
-              materieStudiu={materieStudiu}
-              materii={materii}
-              setMaterieStudiu={setMaterieStudiu}
-              formateazaTimp={formateazaTimp}
-              timpSecunde={timpSecunde}
-              asteaptaConfirmare={asteaptaConfirmare}
-              descriereStudiu={descriereStudiu}
-              setDescriereStudiu={setDescriereStudiu}
-              setAsteaptaConfirmare={setAsteaptaConfirmare}
-              setCronometruPornit={setCronometruPornit}
-              limitaZilnicaAtinsa={limitaZilnicaAtinsa}
-              inCooldown={inCooldown}
-              minutePauzaRamase={minutePauzaRamase}
-              esteTextValid={esteTextValid}
-              salveazaSesiune={salveazaSesiune}
-              setTimpSecunde={setTimpSecunde}
-              istoricSesiuni={istoricSesiuni}
-              setModalIstoricDeschis={setModalIstoricDeschis}
-              toast={toast}
-            />
-          } />
+              <div className="flex flex-col items-center gap-4 py-8 relative z-10">
+                <h1 className="text-4xl font-extrabold tracking-tight text-on-surface dark:text-white">Study Tracker</h1>
+                <Navigation />
+              </div>
 
-          <Route path="/quests" element={
-            <Teme
-              salveazaTema={salveazaTema}
-              dropdownQuestDeschis={dropdownQuestDeschis}
-              setDropdownQuestDeschis={setDropdownQuestDeschis}
-              materieTema={materieTema}
-              materii={materii}
-              setMaterieTema={setMaterieTema}
-              dropdownDificultateDeschis={dropdownDificultateDeschis}
-              setDropdownDificultateDeschis={setDropdownDificultateDeschis}
-              dificultateTema={dificultateTema}
-              setDificultateTema={setDificultateTema}
-              descriereTema={descriereTema}
-              setDescriereTema={setDescriereTema}
-              istoricTeme={istoricTeme}
-            />
-          } />
+              <Routes>
+                <Route path="/" element={
+                  <Dashboard
+                    nivelCurent={nivelCurent}
+                    rangCurent={rangCurent}
+                    calculeazaStreak={calculeazaStreak}
+                    formateazaTimp={formateazaTimp}
+                    totalSecundeAdunate={totalSecundeAdunate}
+                    xpInNivelCurent={xpInNivelCurent}
+                    xpPerNivel={xpPerNivel}
+                    procentajBara={procentajBara}
+                    totalXPStudiu={totalXPStudiu}
+                    totalXPTeme={totalXPTeme}
+                    urmatorulRang={urmatorulRang}
+                    topMaterii={topMaterii}
+                  />
+                } />
 
-          <Route path="/orar" element={
-            <Orar
-              adaugaMaterie={adaugaMaterie}
-              numeNou={numeNou}
-              setNumeNou={setNumeNou}
-              profesorNou={profesorNou}
-              setProfesorNou={setProfesorNou}
-              areTezaNou={areTezaNou}
-              setAreTezaNou={setAreTezaNou}
-              materii={materii}
-              arataToateMateriile={arataToateMateriile}
-              setArataToateMateriile={setArataToateMateriile}
-              stergeMaterie={stergeMaterie}
-              editeazaMaterie={editeazaMaterie}
-              token={token}
-            />
-          } />
-        </Routes>
+                <Route path="/studiu" element={
+                  <Studiu
+                    cronometruPornit={cronometruPornit}
+                    dropdownMaterieDeschis={dropdownMaterieDeschis}
+                    setDropdownMaterieDeschis={setDropdownMaterieDeschis}
+                    materieStudiu={materieStudiu}
+                    materii={materii}
+                    setMaterieStudiu={setMaterieStudiu}
+                    formateazaTimp={formateazaTimp}
+                    timpSecunde={timpSecunde}
+                    asteaptaConfirmare={asteaptaConfirmare}
+                    descriereStudiu={descriereStudiu}
+                    setDescriereStudiu={setDescriereStudiu}
+                    setAsteaptaConfirmare={setAsteaptaConfirmare}
+                    setCronometruPornit={setCronometruPornit}
+                    limitaZilnicaAtinsa={limitaZilnicaAtinsa}
+                    inCooldown={inCooldown}
+                    minutePauzaRamase={minutePauzaRamase}
+                    esteTextValid={esteTextValid}
+                    salveazaSesiune={salveazaSesiune}
+                    setTimpSecunde={setTimpSecunde}
+                    istoricSesiuni={istoricSesiuni}
+                    setModalIstoricDeschis={setModalIstoricDeschis}
+                    toast={toast}
+                  />
+                } />
 
-        <HistoryModal
-          modalIstoricDeschis={modalIstoricDeschis}
-          setModalIstoricDeschis={setModalIstoricDeschis}
-          istoricSesiuni={istoricSesiuni}
-          istoricTeme={istoricTeme}
-          formateazaTimp={formateazaTimp}
-          secundeAstazi={secundeAstazi}
-          totalXP={totalXP}
-        />
+                <Route path="/quests" element={
+                  <Teme
+                    salveazaTema={salveazaTema}
+                    dropdownQuestDeschis={dropdownQuestDeschis}
+                    setDropdownQuestDeschis={setDropdownQuestDeschis}
+                    materieTema={materieTema}
+                    materii={materii}
+                    setMaterieTema={setMaterieTema}
+                    dropdownDificultateDeschis={dropdownDificultateDeschis}
+                    setDropdownDificultateDeschis={setDropdownDificultateDeschis}
+                    dificultateTema={dificultateTema}
+                    setDificultateTema={setDificultateTema}
+                    descriereTema={descriereTema}
+                    setDescriereTema={setDescriereTema}
+                    istoricTeme={istoricTeme}
+                  />
+                } />
 
-      </DynamicBackground>
+                <Route path="/orar" element={
+                  <Orar
+                    adaugaMaterie={adaugaMaterie}
+                    numeNou={numeNou}
+                    setNumeNou={setNumeNou}
+                    profesorNou={profesorNou}
+                    setProfesorNou={setProfesorNou}
+                    areTezaNou={areTezaNou}
+                    setAreTezaNou={setAreTezaNou}
+                    materii={materii}
+                    arataToateMateriile={arataToateMateriile}
+                    setArataToateMateriile={setArataToateMateriile}
+                    stergeMaterie={stergeMaterie}
+                    editeazaMaterie={editeazaMaterie}
+                    token={token}
+                  />
+                } />
+              </Routes>
+
+              <HistoryModal
+                modalIstoricDeschis={modalIstoricDeschis}
+                setModalIstoricDeschis={setModalIstoricDeschis}
+                istoricSesiuni={istoricSesiuni}
+                istoricTeme={istoricTeme}
+                formateazaTimp={formateazaTimp}
+                secundeAstazi={secundeAstazi}
+                totalXP={totalXP}
+              />
+            </DynamicBackground>
+          )
+        } />
+      </Routes>
     </Router>
   );
 }
