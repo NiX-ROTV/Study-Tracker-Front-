@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
   const [seIncarca, setSeIncarca] = useState(false);
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const API_BASE_URL = 'https://study-tracker-production-cbb9.up.railway.app';
 
   const handleForgot = async (e) => {
     e.preventDefault();

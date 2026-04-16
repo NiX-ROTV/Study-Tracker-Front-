@@ -15,8 +15,7 @@ import Orar from './pages/Orar'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 
-const RAW_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-const API_BASE_URL = RAW_URL.endsWith('/') ? RAW_URL.slice(0, -1) : RAW_URL;
+const API_BASE_URL = 'https://study-tracker-production-cbb9.up.railway.app';
 
 const DynamicBackground = ({ children, modIntunecat }) => {
   const location = useLocation();
